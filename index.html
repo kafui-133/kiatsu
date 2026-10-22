@@ -108,7 +108,7 @@ footer a{color:var(--accent)}
 
   <section class="card">
     <h2>時間ごとの気圧と注意度</h2>
-    <div class="chartwrap"><div class="scroller" id="scroller"><canvas id="chart" height="206"></canvas></div><canvas id="axis"></canvas></div>
+    <div class="chartwrap"><div class="scroller" id="scroller"><canvas id="chart" height="286"></canvas></div><canvas id="axis"></canvas></div>
     <div class="legend">
       <span style="--c:var(--lv0)">安心</span><span style="--c:var(--lv1)">やや注意</span><span style="--c:var(--lv2)">注意</span><span style="--c:var(--lv3)">警戒</span>
     </div>
@@ -235,35 +235,81 @@ function drawFace(l){
 }
 
 const DOW = ["日","月","火","水","木","金","土"];
+// 縦軸は「1hPa = 24px」で固定（1時間 = 22px）。どの時間帯でも同じ変化は同じ傾きに見える。
+// 警戒（3時間で3hPa以上 ≒ 1hPa/時）は約47°以上の急な線、安心（3時間で1hPa未満）は約20°未満のほぼ平らな線になる基準。
+const G = {colW:22, padL:44, padR:16, H:286, top:28, plotH:200, pxPerHpa:24};
+let view = null, raf = 0; // 縦軸の表示範囲 {mn, mx}（スクロールに合わせて上下にずらす）
+
+// いま画面に見えている時間帯が収まるように縦軸を上下にずらす（縮尺は変えない）
+function targetRange(){
+  const {p, nowIdx} = state, start = Math.max(0, nowIdx - 12), sc = $("scroller");
+  const i0 = Math.max(start, start + Math.floor((sc.scrollLeft - G.padL) / G.colW) - 1);
+  const i1 = Math.min(p.length - 1, start + Math.ceil((sc.scrollLeft + sc.clientWidth - G.padL) / G.colW) + 1);
+  const seg = p.slice(i0, i1 + 1);
+  const lo = Math.min(...seg), hi = Math.max(...seg), m = (lo + hi) / 2;
+  // 台風などで見えている範囲が枠に入りきらないときだけ縮める
+  const span = Math.max(G.plotH / G.pxPerHpa, hi - lo + 0.6);
+  return {mn: m - span/2, mx: m + span/2};
+}
+
 function drawChart(){
-  const {times, p, lv, nowIdx} = state;
+  const {times, p, nowIdx} = state;
   const start = Math.max(0, nowIdx - 12);       // 12時間前から
-  const n = times.length - start;
-  const colW = 22, padL = 44, padR = 16, H = 206, top = 28, plotH = 120, bandY = top + plotH + 20, bandH = 18;
-  const W = padL + n * colW + padR;
+  const {colW, padL, padR, H} = G;
+  const W = padL + (times.length - start) * colW + padR;
   const cv = $("chart"), dpr = window.devicePixelRatio || 1;
   cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + "px"; cv.style.height = H + "px";
+  // スクロール位置：現在を左寄りに
+  $("scroller").scrollLeft = Math.max(0, padL + (nowIdx - start) * colW + colW/2 - 130);
+  view = targetRange();
+  paintChart();
+}
+
+// スクロールしたら縦軸をなめらかに追従させる
+function followScroll(){
+  if (!state || raf) return;
+  const tick = () => {
+    const t = targetRange();
+    view.mn += (t.mn - view.mn) * 0.3; view.mx += (t.mx - view.mx) * 0.3;
+    const done = Math.abs(t.mn - view.mn) < 0.01 && Math.abs(t.mx - view.mx) < 0.01;
+    if (done) view = t;
+    paintChart();
+    raf = done ? 0 : requestAnimationFrame(tick);
+  };
+  raf = requestAnimationFrame(tick);
+}
+
+function paintChart(){
+  const {times, p, lv, nowIdx} = state;
+  const start = Math.max(0, nowIdx - 12);
+  const {colW, padL, padR, H, top, plotH} = G, bandY = top + plotH + 20, bandH = 18;
+  const W = padL + (times.length - start) * colW + padR;
+  const cv = $("chart"), dpr = window.devicePixelRatio || 1;
   const g = cv.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
-  const seg = p.slice(start);
-  let mn = Math.floor(Math.min(...seg) - 1), mx = Math.ceil(Math.max(...seg) + 1);
-  if (mx - mn < 6){ const m = (mx+mn)/2; mn = Math.floor(m-3); mx = Math.ceil(m+3); }
+  const {mn, mx} = view;
   const x = i => padL + (i - start) * colW + colW/2;
   const y = v => top + (mx - v) / (mx - mn) * plotH;
   const fg = css("--fg"), muted = css("--muted"), line = css("--line"), accent = css("--accent");
   g.font = `11px ${css("--mono")}`; g.textBaseline = "middle";
 
+  // 背景を時間ごとの注意度の色で塗る（パッと見でわかるように）
+  for (let i = start; i < times.length; i++){
+    g.fillStyle = css(LV[lv[i]].bg);
+    g.globalAlpha = i < nowIdx ? 0.5 : 1;
+    g.fillRect(x(i) - colW/2, top - 6, colW, plotH + 12);
+  }
+  g.globalAlpha = 1;
   // 横グリッド
-  const step = (mx - mn) > 12 ? 4 : 2;
+  const span = mx - mn, step = span <= 3 ? 0.5 : span <= 10 ? 1 : span <= 20 ? 2 : 4;
   for (let v = Math.ceil(mn/step)*step; v <= mx; v += step){
-    g.strokeStyle = line; g.lineWidth = 1; g.beginPath(); g.moveTo(padL, y(v)); g.lineTo(W - padR, y(v)); g.stroke();
-    g.fillStyle = muted; g.textAlign = "right"; g.fillText(v, padL - 6, y(v));
+    g.strokeStyle = line; g.lineWidth = Number.isInteger(v) ? 1 : 0.5; g.beginPath(); g.moveTo(padL, y(v)); g.lineTo(W - padR, y(v)); g.stroke();
   }
   // 固定の目盛り（横スクロールしても見える）
   const ax = $("axis"); ax.width = padL * dpr; ax.height = H * dpr; ax.style.width = padL + "px"; ax.style.height = H + "px";
   const ga = ax.getContext("2d"); ga.setTransform(dpr,0,0,dpr,0,0);
   ga.fillStyle = css("--surface"); ga.fillRect(0, 0, padL - 2, H);
   ga.font = `11px ${css("--mono")}`; ga.textBaseline = "middle"; ga.textAlign = "right"; ga.fillStyle = muted;
-  for (let v = Math.ceil(mn/step)*step; v <= mx; v += step) ga.fillText(v, padL - 8, y(v));
+  for (let v = Math.ceil(mn/step)*step; v <= mx; v += step) { if (Number.isInteger(v)) ga.fillText(v, padL - 6, y(v)) }  // 0.5刻みの線は目盛りなし
   ga.font = `10px ${css("--body")}`; ga.textAlign = "left"; ga.fillText("hPa", 6, top - 12);
   // 日付区切り・時刻
   g.textAlign = "center";
@@ -282,22 +328,21 @@ function drawChart(){
     g.fillRect(x(i) - colW/2 + 1, bandY, colW - 2, bandH);
     g.globalAlpha = 1;
   }
-  // 塗り
+  // 線と塗りはグラフ領域の中だけに描く（範囲外の部分は切る）
+  g.save(); g.beginPath(); g.rect(padL, top - 6, W - padL, plotH + 12); g.clip();
   const grad = g.createLinearGradient(0, top, 0, top + plotH);
-  grad.addColorStop(0, accent + "55"); grad.addColorStop(1, accent + "00");
+  grad.addColorStop(0, accent + "33"); grad.addColorStop(1, accent + "00");
   g.beginPath(); g.moveTo(x(start), top + plotH);
   for (let i = start; i < times.length; i++) g.lineTo(x(i), y(p[i]));
   g.lineTo(x(times.length-1), top + plotH); g.closePath();
   g.fillStyle = /^#/.test(accent) ? grad : "transparent"; g.fill();
-  // 線
   g.beginPath(); for (let i = start; i < times.length; i++){ i===start ? g.moveTo(x(i), y(p[i])) : g.lineTo(x(i), y(p[i])) }
   g.strokeStyle = accent; g.lineWidth = 2.5; g.lineJoin = "round"; g.stroke();
+  g.restore();
   // 現在
   g.strokeStyle = fg; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x(nowIdx), top - 4); g.lineTo(x(nowIdx), bandY + bandH); g.stroke();
   g.fillStyle = fg; g.beginPath(); g.arc(x(nowIdx), y(p[nowIdx]), 5, 0, Math.PI*2); g.fill();
   g.font = `bold 11px ${css("--body")}`; g.fillText("いま", x(nowIdx), top - 12 < 18 ? 24 : top - 12);
-  // スクロール位置：現在を左寄りに
-  $("scroller").scrollLeft = Math.max(0, x(nowIdx) - 130);
 }
 
 function renderDays(){
@@ -348,7 +393,8 @@ $("searchForm").addEventListener("submit", async e => {
 function setBusy(b){ $("btnGps").classList.toggle("spin", b) }
 function showError(m){ $("error").hidden = !m; $("error").textContent = m }
 $("btnGps").addEventListener("click", useGps);
-window.addEventListener("resize", () => state && drawChart());
+window.addEventListener("resize", followScroll);
+$("scroller").addEventListener("scroll", followScroll, {passive:true});
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => state && render());
 document.addEventListener("visibilitychange", () => { if (!document.hidden && state){ const l = store.get("loc"); l && load(l) } });
 
