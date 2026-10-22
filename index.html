@@ -291,6 +291,13 @@ function paintChart(){
   const fg = css("--fg"), muted = css("--muted"), line = css("--line"), accent = css("--accent");
   g.font = `11px ${css("--mono")}`; g.textBaseline = "middle";
 
+  // 背景を時間ごとの注意度の色で塗る（パッと見でわかるように）
+  for (let i = start; i < times.length; i++){
+    g.fillStyle = css(LV[lv[i]].bg);
+    g.globalAlpha = i < nowIdx ? 0.5 : 1;
+    g.fillRect(x(i) - colW/2, top - 6, colW, plotH + 12);
+  }
+  g.globalAlpha = 1;
   // 横グリッド
   const span = mx - mn, step = span <= 3 ? 0.5 : span <= 7 ? 1 : span <= 14 ? 2 : 4;
   for (let v = Math.ceil(mn/step)*step; v <= mx; v += step){
@@ -323,7 +330,7 @@ function paintChart(){
   // 線と塗りはグラフ領域の中だけに描く（範囲外の部分は切る）
   g.save(); g.beginPath(); g.rect(padL, top - 6, W - padL, plotH + 12); g.clip();
   const grad = g.createLinearGradient(0, top, 0, top + plotH);
-  grad.addColorStop(0, accent + "55"); grad.addColorStop(1, accent + "00");
+  grad.addColorStop(0, accent + "33"); grad.addColorStop(1, accent + "00");
   g.beginPath(); g.moveTo(x(start), top + plotH);
   for (let i = start; i < times.length; i++) g.lineTo(x(i), y(p[i]));
   g.lineTo(x(times.length-1), top + plotH); g.closePath();
