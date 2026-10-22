@@ -108,7 +108,7 @@ footer a{color:var(--accent)}
 
   <section class="card">
     <h2>時間ごとの気圧と注意度</h2>
-    <div class="chartwrap"><div class="scroller" id="scroller"><canvas id="chart" height="246"></canvas></div><canvas id="axis"></canvas></div>
+    <div class="chartwrap"><div class="scroller" id="scroller"><canvas id="chart" height="286"></canvas></div><canvas id="axis"></canvas></div>
     <div class="legend">
       <span style="--c:var(--lv0)">安心</span><span style="--c:var(--lv1)">やや注意</span><span style="--c:var(--lv2)">注意</span><span style="--c:var(--lv3)">警戒</span>
     </div>
@@ -235,20 +235,21 @@ function drawFace(l){
 }
 
 const DOW = ["日","月","火","水","木","金","土"];
-const G = {colW:22, padL:44, padR:16, H:246, top:28, plotH:160};
-let view = null, raf = 0; // 縦軸の表示範囲 {mn, mx}（スクロールに合わせて動かす）
+// 縦軸は「1hPa = 24px」で固定（1時間 = 22px）。どの時間帯でも同じ変化は同じ傾きに見える。
+// 警戒（3時間で3hPa以上 ≒ 1hPa/時）は約47°以上の急な線、安心（3時間で1hPa未満）は約20°未満のほぼ平らな線になる基準。
+const G = {colW:22, padL:44, padR:16, H:286, top:28, plotH:200, pxPerHpa:24};
+let view = null, raf = 0; // 縦軸の表示範囲 {mn, mx}（スクロールに合わせて上下にずらす）
 
-// いま画面に見えている時間帯の気圧から縦軸の範囲を決める（最低2hPa幅）
+// いま画面に見えている時間帯が収まるように縦軸を上下にずらす（縮尺は変えない）
 function targetRange(){
   const {p, nowIdx} = state, start = Math.max(0, nowIdx - 12), sc = $("scroller");
   const i0 = Math.max(start, start + Math.floor((sc.scrollLeft - G.padL) / G.colW) - 1);
   const i1 = Math.min(p.length - 1, start + Math.ceil((sc.scrollLeft + sc.clientWidth - G.padL) / G.colW) + 1);
   const seg = p.slice(i0, i1 + 1);
-  let mn = Math.min(...seg), mx = Math.max(...seg);
-  const pad = Math.max(0.3, (mx - mn) * 0.1);
-  mn -= pad; mx += pad;
-  if (mx - mn < 2){ const m = (mx+mn)/2; mn = m-1; mx = m+1; }
-  return {mn, mx};
+  const lo = Math.min(...seg), hi = Math.max(...seg), m = (lo + hi) / 2;
+  // 台風などで見えている範囲が枠に入りきらないときだけ縮める
+  const span = Math.max(G.plotH / G.pxPerHpa, hi - lo + 0.6);
+  return {mn: m - span/2, mx: m + span/2};
 }
 
 function drawChart(){
@@ -299,7 +300,7 @@ function paintChart(){
   }
   g.globalAlpha = 1;
   // 横グリッド
-  const span = mx - mn, step = span <= 3 ? 0.5 : span <= 7 ? 1 : span <= 14 ? 2 : 4;
+  const span = mx - mn, step = span <= 3 ? 0.5 : span <= 10 ? 1 : span <= 20 ? 2 : 4;
   for (let v = Math.ceil(mn/step)*step; v <= mx; v += step){
     g.strokeStyle = line; g.lineWidth = Number.isInteger(v) ? 1 : 0.5; g.beginPath(); g.moveTo(padL, y(v)); g.lineTo(W - padR, y(v)); g.stroke();
   }
