@@ -60,7 +60,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 .stats b{font-family:var(--mono);font-weight:500;color:var(--fg);font-size:15px}
 
 .card{background:var(--surface);border-radius:16px;padding:14px 0 10px}
-.card h2{font-size:13px;letter-spacing:.06em;color:var(--muted);margin:0 16px 8px;font-weight:700}
+.card h2{font-size:13px;letter-spacing:.06em;color:var(--muted);margin:0;font-weight:700;flex:1}
+.card-head{display:flex;align-items:center;gap:6px;margin:0 12px 8px 16px}
+.card-head .icon-btn{height:32px;padding:0 10px;font-size:12px}
+.icon-btn[aria-pressed="true"]{background:var(--fg);color:var(--surface);border-color:var(--fg)}
+.when{display:block;font-family:var(--body);font-weight:700;font-size:13px;color:var(--muted);margin-bottom:2px}
+.when[hidden]{display:none}
 .chartwrap{position:relative}
 #axis{position:absolute;left:0;top:0;pointer-events:none}
 .scroller{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
@@ -97,17 +102,21 @@ footer a{color:var(--accent)}
 
   <section class="now" id="now" aria-live="polite">
     <svg class="face" id="face" viewBox="0 0 100 100" aria-hidden="true"></svg>
-    <div class="level" id="levelText">—</div>
+    <div class="level"><span class="when" id="whenText" hidden></span><span id="levelText">—</span></div>
     <div class="msg" id="msgText">気圧データを読み込んでいます</div>
     <div class="stats">
-      <div>現在の気圧<b><span id="curP">—</span> hPa</b></div>
+      <div><span id="pLabel">現在の気圧</span><b><span id="curP">—</span> hPa</b></div>
       <div>3時間の変化<b id="d3">—</b></div>
       <div>24時間の変化<b id="d24">—</b></div>
     </div>
   </section>
 
   <section class="card">
-    <h2>時間ごとの気圧と注意度</h2>
+    <div class="card-head">
+      <h2>時間ごとの気圧と注意度</h2>
+      <button class="icon-btn" id="btnPick" type="button" aria-pressed="false" title="グラフを左右に動かして、その時間の注意度を上に表示します">時間を選ぶ</button>
+      <button class="icon-btn" id="btnNow" type="button">いま</button>
+    </div>
     <div class="chartwrap"><div class="scroller" id="scroller"><canvas id="chart" height="286"></canvas></div><canvas id="axis"></canvas></div>
     <div class="legend">
       <span style="--c:var(--lv0)">安心</span><span style="--c:var(--lv1)">やや注意</span><span style="--c:var(--lv2)">注意</span><span style="--c:var(--lv3)">警戒</span>
@@ -206,22 +215,32 @@ function useGps(){
 
 /* ---- 表示 ---- */
 function render(){
-  const {p, lv, nowIdx} = state;
-  const L = LV[lv[nowIdx]];
+  sel = state.nowIdx;
+  renderPane(sel);
+  drawChart();
+  renderDays();
+}
+
+// 上の注意ペイン：i 時の状態を表示（ふだんは現在、「時間を選ぶ」モードでは基準バーの時間）
+function renderPane(i){
+  const {times, p, lv, nowIdx} = state;
+  const L = LV[lv[i]];
   const root = $("now");
   root.style.setProperty("--lv", `var(${L.c})`);
   root.style.setProperty("--lvbg", `var(${L.bg})`);
   $("levelText").textContent = L.name;
+  const t = times[i], isNow = i === nowIdx;
+  $("whenText").hidden = isNow;
+  $("whenText").textContent = `${t.getMonth()+1}/${t.getDate()}(${DOW[t.getDay()]}) ${t.getHours()}時${i < nowIdx ? "（過去）" : ""}`;
+  $("pLabel").textContent = isNow ? "現在の気圧" : `${t.getHours()}時の気圧`;
   // 先の3時間で上がる場合は予告
-  const ahead = Math.max(...lv.slice(nowIdx, nowIdx + 4));
-  $("msgText").textContent = ahead > lv[nowIdx] ? `${L.msg} この先3時間で「${LV[ahead].name}」になりそうです。` : L.msg;
-  $("curP").textContent = p[nowIdx].toFixed(1);
+  const ahead = Math.max(...lv.slice(i, i + 4));
+  $("msgText").textContent = ahead > lv[i] ? `${L.msg} この先3時間で「${LV[ahead].name}」になりそうです。` : L.msg;
+  $("curP").textContent = p[i].toFixed(1);
   const fmt = d => (d > 0 ? "+" : "") + d.toFixed(1);
-  $("d3").textContent = nowIdx >= 3 ? fmt(p[nowIdx] - p[nowIdx-3]) : "—";
-  $("d24").textContent = nowIdx >= 24 ? fmt(p[nowIdx] - p[nowIdx-24]) : "—";
-  drawFace(lv[nowIdx]);
-  drawChart();
-  renderDays();
+  $("d3").textContent = i >= 3 ? fmt(p[i] - p[i-3]) : "—";
+  $("d24").textContent = i >= 24 ? fmt(p[i] - p[i-24]) : "—";
+  drawFace(lv[i]);
 }
 
 function drawFace(l){
@@ -239,6 +258,15 @@ const DOW = ["日","月","火","水","木","金","土"];
 // 警戒（3時間で3hPa以上 ≒ 1hPa/時）は約47°以上の急な線、安心（3時間で1hPa未満）は約20°未満のほぼ平らな線になる基準。
 const G = {colW:22, padL:44, padR:16, H:286, top:28, plotH:200, pxPerHpa:24};
 let view = null, raf = 0; // 縦軸の表示範囲 {mn, mx}（スクロールに合わせて上下にずらす）
+// 「時間を選ぶ」モード：基準バーを画面の左から REF px に固定し、グラフを動かして時間を選ぶ
+const REF = 130;
+let pick = store.get("pick") === true, sel = 0;
+const chartStart = () => Math.max(0, state.nowIdx - 12);   // 12時間前から
+const scrollFor = i => Math.max(0, G.padL + (i - chartStart()) * G.colW + G.colW/2 - REF);
+function selAt(){
+  const i = chartStart() + Math.round(($("scroller").scrollLeft + REF - G.padL - G.colW/2) / G.colW);
+  return Math.min(state.p.length - 1, Math.max(chartStart(), i));
+}
 
 // いま画面に見えている時間帯が収まるように縦軸を上下にずらす（縮尺は変えない）
 function targetRange(){
@@ -253,14 +281,16 @@ function targetRange(){
 }
 
 function drawChart(){
-  const {times, p, nowIdx} = state;
-  const start = Math.max(0, nowIdx - 12);       // 12時間前から
+  const {times, nowIdx} = state;
+  const start = chartStart(), sc = $("scroller");
+  // 選ぶモードでは最後の時間まで基準バーに合わせられるよう右に余白をとる
+  G.padR = pick ? Math.max(16, sc.clientWidth - REF - G.colW/2) : 16;
   const {colW, padL, padR, H} = G;
   const W = padL + (times.length - start) * colW + padR;
   const cv = $("chart"), dpr = window.devicePixelRatio || 1;
   cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + "px"; cv.style.height = H + "px";
   // スクロール位置：現在を左寄りに
-  $("scroller").scrollLeft = Math.max(0, padL + (nowIdx - start) * colW + colW/2 - 130);
+  sc.scrollLeft = scrollFor(nowIdx);
   view = targetRange();
   paintChart();
 }
@@ -273,6 +303,7 @@ function followScroll(){
     view.mn += (t.mn - view.mn) * 0.3; view.mx += (t.mx - view.mx) * 0.3;
     const done = Math.abs(t.mn - view.mn) < 0.01 && Math.abs(t.mx - view.mx) < 0.01;
     if (done) view = t;
+    if (pick){ const i = selAt(); if (i !== sel){ sel = i; renderPane(i) } }
     paintChart();
     raf = done ? 0 : requestAnimationFrame(tick);
   };
@@ -281,7 +312,7 @@ function followScroll(){
 
 function paintChart(){
   const {times, p, lv, nowIdx} = state;
-  const start = Math.max(0, nowIdx - 12);
+  const start = chartStart();
   const {colW, padL, padR, H, top, plotH} = G, bandY = top + plotH + 20, bandH = 18;
   const W = padL + (times.length - start) * colW + padR;
   const cv = $("chart"), dpr = window.devicePixelRatio || 1;
@@ -339,10 +370,26 @@ function paintChart(){
   g.beginPath(); for (let i = start; i < times.length; i++){ i===start ? g.moveTo(x(i), y(p[i])) : g.lineTo(x(i), y(p[i])) }
   g.strokeStyle = accent; g.lineWidth = 2.5; g.lineJoin = "round"; g.stroke();
   g.restore();
-  // 現在
-  g.strokeStyle = fg; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x(nowIdx), top - 4); g.lineTo(x(nowIdx), bandY + bandH); g.stroke();
-  g.fillStyle = fg; g.beginPath(); g.arc(x(nowIdx), y(p[nowIdx]), 5, 0, Math.PI*2); g.fill();
-  g.font = `bold 11px ${css("--body")}`; g.fillText("いま", x(nowIdx), top - 12 < 18 ? 24 : top - 12);
+  // 基準バー：ふだんは現在。選ぶモードでは画面上の固定位置に出し、グラフのほうを動かす
+  const labelY = top - 12 < 18 ? 24 : top - 12;
+  g.font = `bold 11px ${css("--body")}`; g.textAlign = "center";
+  let bx = x(nowIdx), by = y(p[nowIdx]), blabel = "いま";
+  if (pick){
+    // 現在の位置は点線で残す
+    if (sel !== nowIdx){
+      g.strokeStyle = muted; g.lineWidth = 1; g.setLineDash([2,3]); g.beginPath(); g.moveTo(x(nowIdx), top - 4); g.lineTo(x(nowIdx), bandY + bandH); g.stroke(); g.setLineDash([]);
+      g.fillStyle = muted; g.fillText("いま", x(nowIdx), labelY);
+    }
+    bx = $("scroller").scrollLeft + REF;
+    const f = Math.min(times.length - 1, Math.max(start, (bx - padL - colW/2) / colW + start));
+    const i0 = Math.floor(f), i1 = Math.min(times.length - 1, i0 + 1);
+    by = y(p[i0] + (p[i1] - p[i0]) * (f - i0));
+    blabel = sel === nowIdx ? "いま" : `${times[sel].getHours()}時`;
+    g.fillStyle = css("--surface"); g.fillRect(bx - 18, labelY - 9, 36, 18);
+  }
+  g.strokeStyle = fg; g.lineWidth = 1.5; g.beginPath(); g.moveTo(bx, top - 4); g.lineTo(bx, bandY + bandH); g.stroke();
+  g.fillStyle = fg; g.beginPath(); g.arc(bx, by, 5, 0, Math.PI*2); g.fill();
+  g.fillText(blabel, bx, labelY);
 }
 
 function renderDays(){
@@ -395,6 +442,17 @@ function showError(m){ $("error").hidden = !m; $("error").textContent = m }
 $("btnGps").addEventListener("click", useGps);
 window.addEventListener("resize", followScroll);
 $("scroller").addEventListener("scroll", followScroll, {passive:true});
+function setPick(on){
+  pick = on; store.set("pick", on);
+  $("btnPick").setAttribute("aria-pressed", String(on));
+  if (state){ sel = state.nowIdx; renderPane(sel); drawChart() }
+}
+$("btnPick").addEventListener("click", () => setPick(!pick));
+$("btnNow").addEventListener("click", () => {
+  if (!state) return;
+  $("scroller").scrollTo({left: scrollFor(state.nowIdx), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+});
+$("btnPick").setAttribute("aria-pressed", String(pick));
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => state && render());
 document.addEventListener("visibilitychange", () => { if (!document.hidden && state){ const l = store.get("loc"); l && load(l) } });
 
