@@ -21,6 +21,7 @@
   --accent:#2f6f9f;
   --lv0:#3f9b74; --lv1:#d6a419; --lv2:#e2702b; --lv3:#c8343f;
   --lv0bg:#e2f3ea; --lv1bg:#fbf1d3; --lv2bg:#fbe4d6; --lv3bg:#f8dadd;
+  --lv4:#8a1c5c; --lv4bg:#f3dbe8;
   --display:"Zen Maru Gothic","Hiragino Maru Gothic ProN",system-ui,sans-serif;
   --body:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
@@ -29,11 +30,11 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#121a22; --surface:#1b2631; --fg:#e6edf3; --muted:#93a4b4; --line:#2c3a47; --accent:#7fb6e0;
   --lv0:#5cc497; --lv1:#e8c04a; --lv2:#f08d4f; --lv3:#ef5d67;
-  --lv0bg:#18342a; --lv1bg:#3a3217; --lv2bg:#3d2617; --lv3bg:#41191e; color-scheme:dark}}
+  --lv0bg:#18342a; --lv1bg:#3a3217; --lv2bg:#3d2617; --lv3bg:#41191e; --lv4:#e27bb6; --lv4bg:#3d1830; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#121a22; --surface:#1b2631; --fg:#e6edf3; --muted:#93a4b4; --line:#2c3a47; --accent:#7fb6e0;
   --lv0:#5cc497; --lv1:#e8c04a; --lv2:#f08d4f; --lv3:#ef5d67;
-  --lv0bg:#18342a; --lv1bg:#3a3217; --lv2bg:#3d2617; --lv3bg:#41191e; color-scheme:dark}
+  --lv0bg:#18342a; --lv1bg:#3a3217; --lv2bg:#3d2617; --lv3bg:#41191e; --lv4:#e27bb6; --lv4bg:#3d1830; color-scheme:dark}
 *{box-sizing:border-box}
 html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--bg)}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6;
@@ -55,7 +56,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .face{grid-row:span 2;width:76px;height:76px}
 .level{font-family:var(--display);font-weight:900;font-size:30px;line-height:1.1;color:var(--lv,var(--fg))}
 .msg{font-size:14px;color:var(--fg)}
-.stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--lv,var(--line)) 30%,transparent);font-size:12px;color:var(--muted)}
+.stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:10px 8px;margin-top:12px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--lv,var(--line)) 30%,transparent);font-size:12px;color:var(--muted)}
 .stats div{display:flex;flex-direction:column}
 .stats b{font-family:var(--mono);font-weight:500;color:var(--fg);font-size:15px}
 
@@ -66,6 +67,29 @@ button{font:inherit;color:inherit;cursor:pointer}
 .icon-btn[aria-pressed="true"]{background:var(--fg);color:var(--surface);border-color:var(--fg)}
 .when{display:block;font-family:var(--body);font-weight:700;font-size:13px;color:var(--muted);margin-bottom:2px}
 .when[hidden]{display:none}
+.care{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.care .card-head{margin:0}
+.sym{display:flex;flex-direction:column;gap:8px}
+.sym-g{display:flex;flex-wrap:wrap;gap:6px}
+.sym-g small{flex-basis:100%;color:var(--muted);font-size:11.5px}
+.chip-btn{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 12px;font-size:13px;min-height:36px}
+.chip-btn[aria-pressed="true"]{background:var(--fg);color:var(--surface);border-color:var(--fg)}
+.chip-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.advice{border-radius:14px;padding:14px;background:var(--lvbg);display:flex;flex-direction:column;gap:8px}
+.adv-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.adv-lv{font-family:var(--display);font-weight:900;font-size:22px;color:var(--lv);line-height:1.2}
+.tag{font-size:12px;border-radius:999px;padding:2px 10px;background:var(--surface);color:var(--fg)}
+.adv-sum{font-weight:700;font-size:15px}
+.factors{display:flex;flex-wrap:wrap;gap:6px;font-size:12px}
+.factors span{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:2px 8px;color:var(--muted)}
+.factors span.on{color:var(--fg);border-color:var(--fg);font-weight:700}
+.adv-block{background:var(--surface);border-radius:10px;padding:10px 12px;font-size:13.5px}
+.adv-block b{display:block;font-size:13px;margin-bottom:2px}
+.ng{background:var(--lv3bg);border:1.5px solid var(--lv3);border-radius:10px;padding:8px 12px;font-size:13.5px}
+.ng b{color:var(--lv3)}
+.care details{font-size:12px;color:var(--muted)}
+.care pre{white-space:pre-wrap;word-break:break-all;background:var(--bg);border-radius:8px;padding:10px;font-family:var(--mono);font-size:11.5px;color:var(--fg);margin:6px 0 0}
+.redflag{font-size:12px;color:var(--muted);margin:0;line-height:1.6}
 .chartwrap{position:relative}
 #axis{position:absolute;left:0;top:0;pointer-events:none}
 .scroller{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
@@ -108,7 +132,21 @@ footer a{color:var(--accent)}
       <div><span id="pLabel">現在の気圧</span><b><span id="curP">—</span> hPa</b></div>
       <div>3時間の変化<b id="d3">—</b></div>
       <div>24時間の変化<b id="d24">—</b></div>
+      <div>気温<b id="curT">—</b></div>
+      <div>湿度<b id="curH">—</b></div>
+      <div>気温の前日差<b id="dT24">—</b></div>
     </div>
+  </section>
+
+  <section class="card care" aria-labelledby="careTitle">
+    <div class="card-head">
+      <h2 id="careTitle">いまの体の症状からアドバイス</h2>
+      <button class="icon-btn" id="btnClear" type="button">クリア</button>
+    </div>
+    <div class="sym" id="sym"></div>
+    <div class="advice" id="advice" aria-live="polite"></div>
+    <details><summary>判定結果をJSONで見る</summary><pre id="advJson"></pre></details>
+    <p class="redflag">⚠ 突然の激しい頭痛・今までで一番ひどい痛み、手足のしびれ、ろれつが回らない、高熱や意識がもうろうとする場合は、気象のせいと決めつけず、すぐに医療機関（救急）を受診してください。</p>
   </section>
 
   <section class="card">
@@ -134,8 +172,8 @@ footer a{color:var(--accent)}
   </section>
 
   <footer>
-    注意度は「直近3時間・6時間の気圧変化の大きさ」から出した目安です（下降は少し重めに判定）。体調の判断は自分の感覚とお医者さんを優先してください。<br>
-    気圧データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>（地上気圧・1時間ごと）／地名：BigDataCloud
+    注意度は「直近3時間・6時間の気圧変化の大きさ」から出した目安です（下降は少し重めに判定）。アドバイスは気圧・寒暖差・湿度と入力した症状を組み合わせた一般的なセルフケアの目安です。体調の判断は自分の感覚とお医者さんを優先してください。<br>
+    気圧データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>（地上気圧・気温・湿度、1時間ごと）／地名：BigDataCloud
   </footer>
 </main>
 
@@ -167,18 +205,19 @@ function levelOf(p, i){
 
 /* ---- データ取得 ---- */
 async function fetchPressure(lat, lon){
-  const u = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=surface_pressure&past_days=1&forecast_days=3&timezone=auto`;
+  const u = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=surface_pressure,temperature_2m,relative_humidity_2m&past_days=1&forecast_days=3&timezone=auto`;
   const r = await fetch(u);
   if (!r.ok) throw new Error("気圧データを取得できませんでした（" + r.status + "）");
   const j = await r.json();
   const times = j.hourly.time.map(t => new Date(t)); // ローカル時刻文字列
   const p = j.hourly.surface_pressure;
+  const temp = j.hourly.temperature_2m, rh = j.hourly.relative_humidity_2m;
   // 現在時刻（地点のタイムゾーン）に一番近いインデックス
   const nowLocal = new Date(Date.now() + (j.utc_offset_seconds + new Date().getTimezoneOffset()*60) * 1000);
   let nowIdx = times.findIndex(t => t > nowLocal) - 1;
   if (nowIdx < 0) nowIdx = 0;
   const res = p.map((_, i) => levelOf(p, i));
-  return {times, p, lv: res.map(x=>x.lv), score: res.map(x=>x.score), nowIdx, tz: j.timezone};
+  return {times, p, temp, rh, lv: res.map(x=>x.lv), score: res.map(x=>x.score), nowIdx, tz: j.timezone};
 }
 async function placeName(lat, lon){
   try{
@@ -219,6 +258,7 @@ function render(){
   renderPane(sel);
   drawChart();
   renderDays();
+  renderAdvice();
 }
 
 // 上の注意ペイン：i 時の状態を表示（ふだんは現在、「時間を選ぶ」モードでは基準バーの時間）
@@ -240,6 +280,10 @@ function renderPane(i){
   const fmt = d => (d > 0 ? "+" : "") + d.toFixed(1);
   $("d3").textContent = i >= 3 ? fmt(p[i] - p[i-3]) : "—";
   $("d24").textContent = i >= 24 ? fmt(p[i] - p[i-24]) : "—";
+  const {temp, rh} = state, num = v => typeof v === "number";
+  $("curT").textContent = num(temp[i]) ? temp[i].toFixed(1) + "℃" : "—";
+  $("curH").textContent = num(rh[i]) ? Math.round(rh[i]) + "%" : "—";
+  $("dT24").textContent = i >= 24 && num(temp[i]) && num(temp[i-24]) ? fmt(temp[i] - temp[i-24]) + "℃" : "—";
   drawFace(lv[i]);
 }
 
@@ -416,6 +460,163 @@ function renderDays(){
   }
   $("days").innerHTML = out.join("");
 }
+
+/* ---- 症状 × 気象のアドバイス ---- */
+// 症状グループ  A:気圧の予兆  B:寒暖差タイプ  C:湿気タイプ  D:偏頭痛タイプ
+const SYM = [
+  {id:"ear",    g:"A", label:"耳の詰まり・耳鳴り"},
+  {id:"yawn",   g:"A", label:"あくびが多い"},
+  {id:"omen",   g:"A", label:"頭痛の予兆（なんとなく重い）"},
+  {id:"neck",   g:"B", label:"首・肩のこり"},
+  {id:"tight",  g:"B", label:"締め付けられる頭痛"},
+  {id:"dull",   g:"C", label:"全身のだるさ・体が重い"},
+  {id:"swell",  g:"C", label:"むくみ"},
+  {id:"throb",  g:"D", label:"ズキズキ脈打つ頭痛"},
+  {id:"light",  g:"D", label:"光がまぶしい"},
+  {id:"nausea", g:"D", label:"吐き気"},
+];
+const SYM_G = {A:"予兆・耳", B:"首・肩・頭の締め付け", C:"だるさ・むくみ", D:"偏頭痛っぽい症状"};
+const ALERT = [
+  {name:"安心",     c:"--lv0", bg:"--lv0bg"},
+  {name:"注意",     c:"--lv2", bg:"--lv2bg"},
+  {name:"警戒",     c:"--lv3", bg:"--lv3bg"},
+  {name:"厳重警戒", c:"--lv4", bg:"--lv4bg"},
+];
+const CARE = {
+  p:{title:"気圧変化 × 耳の詰まり・予兆",
+     sum:"気圧の変化で内耳が刺激されているサインです。耳マッサージで早めにケアしましょう。",
+     short:"耳を上・下・横に引っぱる耳マッサージと深呼吸で自律神経を整えましょう。",
+     shortNoEar:"気圧の影響で自律神経が乱れやすいので、深呼吸でゆっくり整えましょう。",
+     text:"気圧が変わると耳の奥（内耳）のセンサーが反応し、自律神経が乱れて頭痛やめまいにつながります。耳を軽くつまんで上・下・横に5秒ずつ引っぱる、つまんだまま後ろに5回まわす耳マッサージで血流を促しましょう。深呼吸やぬるめのシャワーで自律神経を整え、酔い止めや頭痛薬はつらくなる前の早めの服用が効果的です。"},
+  t:{title:"寒暖差 × 首こり・締め付け頭痛",
+     sum:"寒暖差で首・肩がこわばり、締め付けられる頭痛につながっています。首元を温めましょう。",
+     short:"寒暖差対策に、首元・肩を温めてストレッチでほぐしましょう。",
+     shortNoEar:"寒暖差対策に、首元・肩を冷やさないようにしましょう（温めすぎ・もみほぐしは痛みが落ち着いてから）。",
+     text:"前日や朝晩の気温差が大きいと、体温調節で自律神経が疲れ、首や肩の筋肉がこわばって締め付けられるような頭痛が起きやすくなります。蒸しタオルやストールで首元・肩を温め、肩回しや首をゆっくり左右に倒すストレッチでほぐしましょう。耳マッサージも頭まわりの血流改善に役立ちます。"},
+  h:{title:"高湿度 × だるさ・むくみ",
+     sum:"湿気で水分代謝が落ち、だるさやむくみが出ています。除湿と温かい飲み物でめぐりを良くしましょう。",
+     short:"湿度が高いので、除湿と温かい飲み物で水分のめぐりを良くしましょう。",
+     text:"湿度が高いと汗が蒸発しにくく体に水分がたまり、だるさやむくみ、頭の重さにつながります。エアコンの除湿や除湿機で室内を50〜60%に保ち、白湯や温かいお茶で軽く汗をかいて水分代謝を促しましょう。冷たい飲み物のとりすぎや塩分の多い食事は控えめにするのがおすすめです。"},
+  m:{title:"急な気圧変化 × 偏頭痛タイプ",
+     sum:"偏頭痛タイプの症状です。耳マッサージ・長風呂・運動は避け、暗く静かな場所で休みましょう。",
+     text:"急な気圧変化で脳の血管が拡張し、ズキズキと脈打つ偏頭痛が起きている可能性があります。耳マッサージ・長風呂・運動は血管をさらに広げて悪化させるので避けてください。部屋を暗く静かにして横になり、保冷剤をタオルで包んでこめかみを冷やしましょう。処方薬がある場合は早めに服用を。"},
+  m0:{title:"偏頭痛タイプの症状",
+     sum:"偏頭痛の特徴がある症状です。温めたりマッサージしたりせず、暗く静かな場所で休みましょう。",
+     text:"ズキズキ脈打つ痛み・光のまぶしさ・吐き気は、血管が広がって起きる偏頭痛の特徴です。いまは気圧の急な変化は小さめですが、寝不足・空腹・ストレスなども引き金になります。耳マッサージ・長風呂・運動は避け、暗く静かな場所で安静にし、こめかみを冷やしましょう。処方薬がある場合は早めに服用を。"},
+};
+let symSel = new Set();
+(function loadSym(){
+  const v = store.get("sym"), today = new Date().toDateString();
+  if (v && v.date === today) symSel = new Set(v.ids);   // 症状はその日だけ覚える
+})();
+function saveSym(){ store.set("sym", {date: new Date().toDateString(), ids:[...symSel]}) }
+
+function renderSym(){
+  $("sym").innerHTML = Object.keys(SYM_G).map(g => `<div class="sym-g" role="group" aria-label="${SYM_G[g]}"><small>${SYM_G[g]}</small>${
+    SYM.filter(x => x.g === g).map(x => `<button type="button" class="chip-btn" data-id="${x.id}" aria-pressed="${symSel.has(x.id)}">${x.label}</button>`).join("")
+  }</div>`).join("");
+}
+$("sym").addEventListener("click", e => {
+  const b = e.target.closest("button[data-id]"); if (!b) return;
+  const id = b.dataset.id;
+  symSel.has(id) ? symSel.delete(id) : symSel.add(id);
+  b.setAttribute("aria-pressed", String(symSel.has(id)));
+  saveSym(); renderAdvice();
+});
+$("btnClear").addEventListener("click", () => { symSel.clear(); saveSym(); renderSym(); renderAdvice() });
+
+// i 時の気象の特徴
+function weatherAt(i){
+  const {times, p, temp, rh, lv} = state, num = v => typeof v === "number";
+  const d3 = i >= 3 ? p[i] - p[i-3] : 0;
+  const dT24 = i >= 24 && num(temp[i]) && num(temp[i-24]) ? temp[i] - temp[i-24] : null;
+  const dT3 = i >= 3 && num(temp[i]) && num(temp[i-3]) ? temp[i] - temp[i-3] : null;
+  const day = times[i].toDateString();
+  const td = temp.filter((v, k) => num(v) && times[k].toDateString() === day);
+  const range = td.length ? Math.max(...td) - Math.min(...td) : null;
+  return {
+    pLv: lv[i], d3,
+    dT24, dT3, range,
+    // 寒暖差：前日同時刻と5℃以上／1日の気温差10℃以上／3時間で4℃以上の急変
+    coldWarm: (dT24 !== null && Math.abs(dT24) >= 5) || (range !== null && range >= 10) || (dT3 !== null && Math.abs(dT3) >= 4),
+    rh: rh[i], humid: num(rh[i]) && rh[i] >= 70,
+  };
+}
+
+// 判定（出力は指定フォーマットのJSONと同じ項目）
+function diagnose(w, sym){
+  const has = g => SYM.some(x => x.g === g && sym.has(x.id));
+  const nD = SYM.filter(x => x.g === "D" && sym.has(x.id)).length;
+  const hits = [];  // {k, lvl(0-3), factor}
+  if (nD && w.pLv >= 2) hits.push({k:"m", lvl: (w.pLv >= 3 || nD >= 2) ? 3 : 2, factor:"気圧変化"});
+  else if (nD) hits.push({k:"m0", lvl:1, factor:null});
+  if (has("A") && w.pLv >= 1) hits.push({k:"p", lvl: w.pLv >= 2 ? 2 : 1, factor:"気圧変化"});
+  if (has("B") && w.coldWarm) hits.push({k:"t", lvl:1, factor:"寒暖差"});
+  if (has("C") && w.humid) hits.push({k:"h", lvl:1, factor:"高湿度"});
+  const migraine = nD > 0, anySym = sym.size > 0;
+
+  const wf = [w.pLv >= 2 && "気圧変化", w.coldWarm && "寒暖差", w.humid && "高湿度"].filter(Boolean);
+  const hf = [...new Set(hits.map(h => h.factor).filter(Boolean))];
+  const fs = hf.length ? hf : wf;
+  const primary = fs.length > 1 ? "複合要因" : fs[0] || "特になし";
+
+  let lvl, summary, blocks;
+  if (hits.length){
+    lvl = Math.max(...hits.map(h => h.lvl));
+    // 一番重いパターンを詳しく、ほかは一言で。偏頭痛のときは耳マッサージ・温めを勧めない
+    const [main, ...rest] = hits.map(h => CARE[h.k]);
+    const tips = rest.map(c => migraine && c.shortNoEar ? c.shortNoEar : c.short);
+    blocks = [{title: main.title, text: main.text}];
+    if (tips.length) blocks.push({title:"あわせて", text: tips.join("")});
+    summary = main.sum;
+  } else if (anySym){
+    lvl = 1;
+    summary = "いまの気象条件と症状の結びつきは弱めです。寝不足・疲れ・ストレスなど他の原因も考えて無理せず休みましょう。";
+    blocks = [{title:"気象以外の要因も", text:"入力した症状に強く関係する気象の変化（気圧・寒暖差・湿度）は、いまは目立ちません。水分補給と休息をとり、首や肩の緊張をゆるめてみましょう。症状が続く・だんだん強くなる場合は、医療機関に相談してください。"}];
+  } else {
+    lvl = w.pLv >= 3 ? 2 : w.pLv >= 2 ? 1 : 0;
+    const tips = [];
+    if (w.pLv >= 1) tips.push("気圧が動いています。耳マッサージや深呼吸で自律神経を整え、頭痛薬は早めに準備を。");
+    if (w.coldWarm) tips.push("寒暖差が大きめです。羽織りものやストールで首元を冷やさないように。");
+    if (w.humid) tips.push("湿度が高めです。除湿をして、温かい飲み物で水分のめぐりを良くしましょう。");
+    summary = wf.length ? `症状が出る前の予防が大切な日です（${wf.join("・")}）。` : "気象による体調への影響は小さそうです。";
+    blocks = [{title:"予防のポイント", text: tips.length ? tips.join("") : "いまは気圧・気温・湿度とも落ち着いています。気になる症状が出たら上で選んでください。"}];
+  }
+  const ear = !migraine && (hits.some(h => h.k === "p" || h.k === "t") || (!anySym && (w.pLv >= 1 || w.coldWarm)));
+  return {
+    alert_level: ALERT[lvl].name,
+    primary_factor: primary,
+    ear_massage_recommended: ear,
+    summary,
+    detailed_advice: blocks.map(b => b.text).join(""),
+    _lvl: lvl, _blocks: blocks, _ng: migraine,
+  };
+}
+
+function renderAdvice(){
+  if (!state) return;
+  const i = state.nowIdx, w = weatherAt(i), r = diagnose(w, symSel), A = ALERT[r._lvl];
+  const el = $("advice");
+  el.style.setProperty("--lv", `var(${A.c})`); el.style.setProperty("--lvbg", `var(${A.bg})`);
+  const f1 = n => (n > 0 ? "+" : "") + n.toFixed(1);
+  const fac = [
+    [w.pLv >= 1, `気圧 ${f1(w.d3)}hPa/3時間`],
+    [w.coldWarm, `寒暖差 ${w.dT24 !== null ? "前日比" + f1(w.dT24) + "℃" : ""}${w.range !== null ? "・1日の差" + w.range.toFixed(0) + "℃" : ""}`],
+    [w.humid, `湿度 ${typeof w.rh === "number" ? Math.round(w.rh) + "%" : "—"}`],
+  ];
+  const esc = t => t.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  el.innerHTML = `
+    <div class="adv-top"><span class="adv-lv">${r.alert_level}</span>
+      <span class="tag">主な要因：${r.primary_factor}</span>
+      <span class="tag">耳マッサージ：${r.ear_massage_recommended ? "おすすめ" : (r._ng ? "NG" : "—")}</span></div>
+    <div class="factors">${fac.map(([on, t]) => `<span class="${on ? "on" : ""}">${t}</span>`).join("")}</div>
+    <div class="adv-sum">${esc(r.summary)}</div>
+    ${r._ng ? `<div class="ng"><b>★NG：</b>耳マッサージ・長風呂・運動（血管が広がって悪化します）</div>` : ""}
+    ${r._blocks.map(b => `<div class="adv-block"><b>${esc(b.title)}</b>${esc(b.text)}</div>`).join("")}`;
+  const {_lvl, _blocks, _ng, ...json} = r;
+  $("advJson").textContent = JSON.stringify(json, null, 2);
+}
+renderSym();
 
 /* ---- 検索 ---- */
 $("searchForm").addEventListener("submit", async e => {
