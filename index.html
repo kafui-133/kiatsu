@@ -90,6 +90,14 @@ button{font:inherit;color:inherit;cursor:pointer}
 .care details{font-size:12px;color:var(--muted)}
 .care pre{white-space:pre-wrap;word-break:break-all;background:var(--bg);border-radius:8px;padding:10px;font-family:var(--mono);font-size:11.5px;color:var(--fg);margin:6px 0 0}
 .redflag{font-size:12px;color:var(--muted);margin:0;line-height:1.6}
+.disclaimer{font-size:12.5px;line-height:1.7;margin:0;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg)}
+.acts-h{font-weight:700;font-size:14px;margin:4px 0 0}
+.still{background:var(--surface);border-left:4px solid var(--lv);border-radius:8px;padding:8px 12px;font-size:13.5px;font-weight:700}
+.acts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;counter-reset:act}
+.acts li{background:var(--surface);border-radius:10px;padding:10px 12px 10px 40px;position:relative;font-size:13.5px;counter-increment:act}
+.acts li::before{content:counter(act);position:absolute;left:12px;top:10px;width:20px;height:20px;border-radius:50%;background:var(--lv);color:var(--surface);font-size:12px;font-weight:700;display:grid;place-items:center}
+.acts .an{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;font-weight:700}
+.acts .dur{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--muted)}
 .chartwrap{position:relative}
 #axis{position:absolute;left:0;top:0;pointer-events:none}
 .scroller{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
@@ -138,15 +146,12 @@ footer a{color:var(--accent)}
     </div>
   </section>
 
-  <section class="card care" aria-labelledby="careTitle">
-    <div class="card-head">
-      <h2 id="careTitle">いまの体の症状からアドバイス</h2>
-      <button class="icon-btn" id="btnClear" type="button">クリア</button>
-    </div>
-    <div class="sym" id="sym"></div>
-    <div class="advice" id="advice" aria-live="polite"></div>
-    <details><summary>判定結果をJSONで見る</summary><pre id="advJson"></pre></details>
-    <p class="redflag">⚠ 突然の激しい頭痛・今までで一番ひどい痛み、手足のしびれ、ろれつが回らない、高熱や意識がもうろうとする場合は、気象のせいと決めつけず、すぐに医療機関（救急）を受診してください。</p>
+  <section style="display:flex;flex-direction:column;gap:8px">
+    <form class="search" id="searchForm">
+      <input id="q" type="search" placeholder="地名で探す（例：那覇、札幌）" autocomplete="off" enterkeyhint="search">
+      <button class="icon-btn" type="submit">検索</button>
+    </form>
+    <div class="results" id="results"></div>
   </section>
 
   <section class="card">
@@ -163,16 +168,20 @@ footer a{color:var(--accent)}
 
   <section class="days" id="days"></section>
 
-  <section style="display:flex;flex-direction:column;gap:8px">
-    <form class="search" id="searchForm">
-      <input id="q" type="search" placeholder="地名で探す（例：那覇、札幌）" autocomplete="off" enterkeyhint="search">
-      <button class="icon-btn" type="submit">検索</button>
-    </form>
-    <div class="results" id="results"></div>
+  <section class="card care" aria-labelledby="careTitle">
+    <div class="card-head">
+      <h2 id="careTitle">いまの体の症状からアドバイス</h2>
+      <button class="icon-btn" id="btnClear" type="button">クリア</button>
+    </div>
+    <div class="sym" id="sym"></div>
+    <div class="advice" id="advice" aria-live="polite"></div>
+    <details><summary>判定結果をJSONで見る</summary><pre id="advJson"></pre></details>
+    <p class="disclaimer">ℹ このアプリは医師ではないため、診断や治療はできません。アドバイスやストレッチは一般的なセルフケアの<b>参考程度</b>にご覧ください。持病のある方・妊娠中の方・薬を飲んでいる方や、症状が強い・続く・いつもと違うときは、医師や薬剤師に相談してください。ストレッチ中に痛みやめまいが出たらすぐにやめましょう。</p>
+    <p class="redflag">⚠ 突然の激しい頭痛・今までで一番ひどい痛み、手足のしびれ、ろれつが回らない、高熱や意識がもうろうとする場合は、気象のせいと決めつけず、すぐに医療機関（救急）を受診してください。</p>
   </section>
 
   <footer>
-    注意度は「直近3時間・6時間の気圧変化の大きさ」から出した目安です（下降は少し重めに判定）。アドバイスは気圧・寒暖差・湿度と入力した症状を組み合わせた一般的なセルフケアの目安です。体調の判断は自分の感覚とお医者さんを優先してください。<br>
+    注意度は「直近3時間・6時間の気圧変化の大きさ」から出した目安です（下降は少し重めに判定）。アドバイスは気圧・寒暖差・湿度と入力した症状を組み合わせた一般的なセルフケアの目安で、医師の診断に代わるものではありません。体調の判断は自分の感覚とお医者さんを優先してください。<br>
     気圧データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>（地上気圧・気温・湿度、1時間ごと）／地名：BigDataCloud
   </footer>
 </main>
@@ -504,6 +513,35 @@ const CARE = {
      sum:"偏頭痛の特徴がある症状です。温めたりマッサージしたりせず、暗く静かな場所で休みましょう。",
      text:"ズキズキ脈打つ痛み・光のまぶしさ・吐き気は、血管が広がって起きる偏頭痛の特徴です。いまは気圧の急な変化は小さめですが、寝不足・空腹・ストレスなども引き金になります。耳マッサージ・長風呂・運動は避け、暗く静かな場所で安静にし、こめかみを冷やしましょう。処方薬がある場合は早めに服用を。"},
 };
+// いまやること（セルフケア・ストレッチ）。move: 体を動かすもの（偏頭痛のときは出さない）
+const ACTS = {
+  earRoll:  {name:"耳くるくる（耳回し）", dur:"約30秒", move:true, how:"両耳の上のほうを軽くつまみ、後ろに5回・前に5回ゆっくり回します。"},
+  earPull:  {name:"耳ひっぱり", dur:"約30秒", move:true, how:"耳を上・下・横に、それぞれ5秒ずつ痛くない程度に軽く引っぱります。"},
+  breath:   {name:"深呼吸", dur:"約1分", how:"4秒かけて鼻から吸い、8秒かけて口からゆっくり吐きます。5回くり返して自律神経を落ち着けます。"},
+  medPrep:  {name:"頭痛薬・酔い止めの準備", how:"痛みが強くなる前の早めの服用がききやすいので、手元に用意しておきましょう。用法・用量は守って。"},
+  neckWarm: {name:"首元・肩を温める", dur:"約10分", how:"蒸しタオル（濡らして絞りレンジで30秒〜1分。熱すぎないか確認）を首の後ろや肩に当てます。ストールやネックウォーマーでもOK。"},
+  shoulder: {name:"肩回し", dur:"約1分", move:true, how:"指先を肩にのせ、ひじで大きな円を描くように後ろへ10回・前へ10回まわします。"},
+  neckTilt: {name:"首倒しストレッチ", dur:"約1分", move:true, how:"背すじを伸ばし、頭をゆっくり右に倒して15秒、左も15秒。反動はつけず、気持ちいい範囲で。"},
+  neckHalf: {name:"首の半円回し", dur:"約1分", move:true, how:"あごを軽く引き、右肩→胸の前→左肩へ半円を描くように頭をゆっくり動かします。往復5回。後ろに大きく反らすのは避けましょう。"},
+  scapula:  {name:"肩甲骨寄せ", dur:"約1分", move:true, how:"胸を張って肩甲骨を背中の真ん中に寄せ、5秒キープしてゆるめます。5回くり返します。"},
+  dehum:    {name:"部屋を除湿する", how:"エアコンの除湿や除湿機で、室内の湿度50〜60%を目安にします。"},
+  warmDrink:{name:"温かい飲み物を飲む", how:"白湯や温かいお茶をゆっくり飲み、軽く汗をかいて水分のめぐりを促します。冷たい飲み物は控えめに。"},
+  ankle:    {name:"足首回し・かかと上げ", dur:"約2分", move:true, how:"座ったまま足首を左右10回ずつ回し、立てるならかかとの上げ下げを20回。ふくらはぎのポンプでむくみを流します。"},
+  dark:     {name:"暗く静かな場所で横になる", how:"カーテンを閉め、スマホやテレビの光・音を避けて目を閉じます。"},
+  cool:     {name:"こめかみ・首の後ろを冷やす", dur:"10〜15分", how:"保冷剤や冷たいタオルを布で包んで当てます。冷やしすぎないように。"},
+  med:      {name:"薬は早めに", how:"処方されている薬や頭痛薬があれば、痛みが強くなる前に用法・用量を守って服用します。"},
+  water:    {name:"こまめに水分補給", how:"常温の水を少しずつ。吐き気があるときは無理せず一口ずつ。"},
+  rest:     {name:"少し休憩する", dur:"5〜10分", how:"画面から目を離し、楽な姿勢で目を閉じて休みます。"},
+};
+const ACTS_BY = {
+  m:  ["dark","cool","med","water"],
+  m0: ["dark","cool","med","water"],
+  p:  ["earRoll","earPull","breath","medPrep"],
+  t:  ["neckWarm","shoulder","neckTilt","neckHalf","scapula","earRoll"],
+  h:  ["dehum","warmDrink","ankle"],
+  other: ["rest","breath","neckTilt","water"],
+};
+
 let symSel = new Set();
 (function loadSym(){
   const v = store.get("sym"), today = new Date().toDateString();
@@ -583,13 +621,27 @@ function diagnose(w, sym){
     blocks = [{title:"予防のポイント", text: tips.length ? tips.join("") : "いまは気圧・気温・湿度とも落ち着いています。気になる症状が出たら上で選んでください。"}];
   }
   const ear = !migraine && (hits.some(h => h.k === "p" || h.k === "t") || (!anySym && (w.pLv >= 1 || w.coldWarm)));
+  // いまやること：当てはまったパターンの順に並べる。偏頭痛のときは体を動かすもの・温めるものを外す
+  let acts;
+  // 一番重いパターンは4つまで、ほかのパターンは上から2つずつ
+  if (hits.length) acts = hits.flatMap((h, n) => ACTS_BY[h.k].slice(0, n ? 2 : 4));
+  else if (anySym) acts = ACTS_BY.other;
+  else {
+    acts = [];
+    if (w.pLv >= 1) acts.push("earRoll", "breath");
+    if (w.coldWarm) acts.push("neckWarm", "shoulder");
+    if (w.humid) acts.push("dehum", "warmDrink");
+    if (!acts.length) acts.push("shoulder", "breath");
+  }
+  acts = [...new Set(acts)].filter(id => !(migraine && (ACTS[id].move || id === "neckWarm" || id === "warmDrink" || id === "medPrep"))).slice(0, 8);
   return {
     alert_level: ALERT[lvl].name,
     primary_factor: primary,
     ear_massage_recommended: ear,
     summary,
     detailed_advice: blocks.map(b => b.text).join(""),
-    _lvl: lvl, _blocks: blocks, _ng: migraine,
+    recommended_actions: acts.map(id => ACTS[id].name),
+    _lvl: lvl, _blocks: blocks, _ng: migraine, _acts: acts,
   };
 }
 
@@ -612,8 +664,12 @@ function renderAdvice(){
     <div class="factors">${fac.map(([on, t]) => `<span class="${on ? "on" : ""}">${t}</span>`).join("")}</div>
     <div class="adv-sum">${esc(r.summary)}</div>
     ${r._ng ? `<div class="ng"><b>★NG：</b>耳マッサージ・長風呂・運動（血管が広がって悪化します）</div>` : ""}
-    ${r._blocks.map(b => `<div class="adv-block"><b>${esc(b.title)}</b>${esc(b.text)}</div>`).join("")}`;
-  const {_lvl, _blocks, _ng, ...json} = r;
+    ${r._blocks.map(b => `<div class="adv-block"><b>${esc(b.title)}</b>${esc(b.text)}</div>`).join("")}
+    <div class="acts-h">いまやること</div>
+    ${r._ng ? `<div class="still">いまは動かず安静に。ストレッチやマッサージは、痛みが落ち着いてからにしましょう。</div>` : ""}
+    <ol class="acts">${r._acts.map(id => { const a = ACTS[id];
+      return `<li><div class="an">${a.name}${a.dur ? `<span class="dur">${a.dur}</span>` : ""}</div>${a.how}</li>` }).join("")}</ol>`;
+  const {_lvl, _blocks, _ng, _acts, ...json} = r;
   $("advJson").textContent = JSON.stringify(json, null, 2);
 }
 renderSym();

@@ -1,6 +1,6 @@
 // オフラインでも前回の表示を出せるようにするサービスワーカー
 // 画面ファイル・気圧データとも「通信優先、失敗したらキャッシュ」
-const CACHE = "kiatsu-v4";
+const CACHE = "kiatsu-v5";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
