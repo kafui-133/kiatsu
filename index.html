@@ -146,18 +146,6 @@ footer a{color:var(--accent)}
     </div>
   </section>
 
-  <section class="card care" aria-labelledby="careTitle">
-    <div class="card-head">
-      <h2 id="careTitle">いまの体の症状からアドバイス</h2>
-      <button class="icon-btn" id="btnClear" type="button">クリア</button>
-    </div>
-    <div class="sym" id="sym"></div>
-    <div class="advice" id="advice" aria-live="polite"></div>
-    <details><summary>判定結果をJSONで見る</summary><pre id="advJson"></pre></details>
-    <p class="disclaimer">ℹ このアプリは医師ではないため、診断や治療はできません。アドバイスやストレッチは一般的なセルフケアの<b>参考程度</b>にご覧ください。持病のある方・妊娠中の方・薬を飲んでいる方や、症状が強い・続く・いつもと違うときは、医師や薬剤師に相談してください。ストレッチ中に痛みやめまいが出たらすぐにやめましょう。</p>
-    <p class="redflag">⚠ 突然の激しい頭痛・今までで一番ひどい痛み、手足のしびれ、ろれつが回らない、高熱や意識がもうろうとする場合は、気象のせいと決めつけず、すぐに医療機関（救急）を受診してください。</p>
-  </section>
-
   <section class="card">
     <div class="card-head">
       <h2>時間ごとの気圧と注意度</h2>
@@ -171,6 +159,18 @@ footer a{color:var(--accent)}
   </section>
 
   <section class="days" id="days"></section>
+
+  <section class="card care" aria-labelledby="careTitle">
+    <div class="card-head">
+      <h2 id="careTitle">いまの体の症状からアドバイス</h2>
+      <button class="icon-btn" id="btnClear" type="button">クリア</button>
+    </div>
+    <div class="sym" id="sym"></div>
+    <div class="advice" id="advice" aria-live="polite"></div>
+    <details><summary>判定結果をJSONで見る</summary><pre id="advJson"></pre></details>
+    <p class="disclaimer">ℹ このアプリは医師ではないため、診断や治療はできません。アドバイスやストレッチは一般的なセルフケアの<b>参考程度</b>にご覧ください。持病のある方・妊娠中の方・薬を飲んでいる方や、症状が強い・続く・いつもと違うときは、医師や薬剤師に相談してください。ストレッチ中に痛みやめまいが出たらすぐにやめましょう。</p>
+    <p class="redflag">⚠ 突然の激しい頭痛・今までで一番ひどい痛み、手足のしびれ、ろれつが回らない、高熱や意識がもうろうとする場合は、気象のせいと決めつけず、すぐに医療機関（救急）を受診してください。</p>
+  </section>
 
   <section style="display:flex;flex-direction:column;gap:8px">
     <form class="search" id="searchForm">
